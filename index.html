@@ -351,42 +351,15 @@
 
         .form-group textarea {
             resize: vertical;
-            min-height: 80px;
+            min-height: 100px;
         }
 
-        .radio-group {
-            display: flex;
-            gap: 30px;
-            margin-top: 10px;
-        }
-
-        .radio-option {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-        }
-
-        .radio-option input[type="radio"] {
-            width: 20px;
-            height: 20px;
-            margin-right: 8px;
-            cursor: pointer;
-        }
-
-        .radio-option label {
-            font-weight: normal;
-            margin: 0;
-            cursor: pointer;
-        }
-
-        .guest-count-group {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .guest-count-group input {
-            max-width: 100px;
+        .form-group small {
+            display: block;
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
         }
 
         .submit-btn {
@@ -416,6 +389,7 @@
         .submit-btn:disabled {
             background: #ccc;
             cursor: not-allowed;
+            transform: none;
         }
 
         .form-message {
@@ -424,6 +398,8 @@
             margin-top: 20px;
             text-align: center;
             display: none;
+            font-size: 16px;
+            line-height: 1.6;
         }
 
         .form-message.success {
@@ -503,20 +479,6 @@
 
             .nav-dots {
                 right: 10px;
-            }
-
-            .radio-group {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .guest-count-group {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .guest-count-group input {
-                max-width: 100%;
             }
         }
 
@@ -623,7 +585,46 @@
 
             <div class="rsvp-section">
                 <h3>Please RSVP by March 25, 2026</h3>
-                <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSdePmjR7iTkXU2ajPPmFsdL4MIiQ7NRdS-rgE6y4VQgEqCC6g/viewform?embedded=true" width="640" height="1159" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
+                
+                <form class="rsvp-form" id="rsvpForm">
+                    <div class="form-group">
+                        <label for="firstName">First Name *</label>
+                        <input type="text" id="firstName" name="firstName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lastName">Last Name *</label>
+                        <input type="text" id="lastName" name="lastName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Phone Number *</label>
+                        <input type="tel" id="phone" name="phone" placeholder="(123) 456-7890" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="attending">Will you attend? *</label>
+                        <select id="attending" name="attending" required>
+                            <option value="">Please select...</option>
+                            <option value="Yes, can't wait!">Yes, can't wait!</option>
+                            <option value="Sadly No">Sadly No</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="guestCount">Number of Guests *</label>
+                        <input type="number" id="guestCount" name="guestCount" min="1" max="10" value="1" required>
+                        <small>Including yourself</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="message">Special Message (Optional)</label>
+                        <textarea id="message" name="message" placeholder="Any dietary restrictions, song requests, or words you'd like to share..."></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Send RSVP 💐</button>
+
+                    <div id="formMessage" class="form-message"></div>
                 </form>
             </div>
 
@@ -740,74 +741,50 @@
             });
         });
 
-        // RSVP Form Logic
-        const rsvpForm = document.getElementById('rsvpForm');
-        const attendingRadios = document.querySelectorAll('input[name="attending"]');
-        const guestCountGroup = document.getElementById('guestCountGroup');
-        const dietaryGroup = document.getElementById('dietaryGroup');
+        // RSVP Form Submission
+        const scriptURL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE'; // You'll replace this after Step 2
+        const form = document.getElementById('rsvpForm');
         const formMessage = document.getElementById('formMessage');
 
-        // Show/hide additional fields based on attendance
-        attendingRadios.forEach(radio => {
-            radio.addEventListener('change', function() {
-                if (this.value === 'yes') {
-                    guestCountGroup.style.display = 'block';
-                    dietaryGroup.style.display = 'block';
-                    document.getElementById('guestCount').required = true;
-                } else {
-                    guestCountGroup.style.display = 'none';
-                    dietaryGroup.style.display = 'none';
-                    document.getElementById('guestCount').required = false;
-                }
-            });
-        });
-
-        // Form submission
-        rsvpForm.addEventListener('submit', async function(e) {
+        form.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const submitBtn = rsvpForm.querySelector('.submit-btn');
+            const submitBtn = form.querySelector('.submit-btn');
             submitBtn.disabled = true;
             submitBtn.textContent = 'Sending...';
             
             // Collect form data
-            const formData = {
-                firstName: document.getElementById('firstName').value,
-                lastName: document.getElementById('lastName').value,
-                email: document.getElementById('email').value,
-                attending: document.querySelector('input[name="attending"]:checked').value,
-                guestCount: document.getElementById('guestCount').value || '0',
-                dietary: document.getElementById('dietary').value,
-                message: document.getElementById('message').value,
-                timestamp: new Date().toISOString()
-            };
+            const formData = new FormData(form);
+            const attending = formData.get('attending');
 
             try {
-                // OPTION 1: Send to Google Sheets via Google Apps Script
-                // Replace YOUR_GOOGLE_SCRIPT_URL with your actual deployment URL
-                const response = await fetch('YOUR_GOOGLE_SCRIPT_URL', {
+                const response = await fetch(scriptURL, {
                     method: 'POST',
-                    mode: 'no-cors',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData)
+                    body: formData
                 });
 
-                // Show success message
-                formMessage.className = 'form-message success';
-                formMessage.textContent = formData.attending === 'yes' 
-                    ? '🎉 Thank you! We can\'t wait to celebrate with you!' 
-                    : '💙 Thank you for letting us know. We\'ll miss you!';
-                
-                // Reset form
-                rsvpForm.reset();
-                guestCountGroup.style.display = 'none';
-                dietaryGroup.style.display = 'none';
+                if (response.ok) {
+                    // Show success message
+                    formMessage.className = 'form-message success';
+                    formMessage.textContent = attending === 'Yes, can\'t wait!' 
+                        ? '🎉 Thank you! We can\'t wait to celebrate with you!' 
+                        : '💙 Thank you for letting us know. We\'ll miss you!';
+                    
+                    // Reset form
+                    form.reset();
 
-                // Create more confetti!
-                if (formData.attending === 'yes') {
-                    createConfetti();
+                    // Create confetti for "Yes" responses
+                    if (attending === 'Yes, can\'t wait!') {
+                        createConfetti();
+                    }
+
+                    // Hide message after 5 seconds
+                    setTimeout(() => {
+                        formMessage.style.display = 'none';
+                    }, 5000);
+
+                } else {
+                    throw new Error('Network response was not ok');
                 }
 
             } catch (error) {
@@ -821,6 +798,4 @@
         });
     </script>
 </body>
-
 </html>
-
