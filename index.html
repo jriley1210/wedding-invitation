@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>You're Invited! 💐</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            overflow-x: hidden;
+            background: linear-gradient(135deg, #fef5e7 0%, #e8f5e9 100%);
+            min-height: 100vh;
+        }
+
+        /* Envelope Page */
+        .envelope-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #a8e6cf 0%, #ffd3b6 100%);
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+
+        .envelope-container.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .envelope {
+            position: relative;
+            width: 300px;
+            height: 200px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .envelope:hover {
+            transform: scale(1.05);
+        }
+
+        .envelope-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border: 3px solid #d4af37;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .envelope-flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 150px solid transparent;
+            border-right: 150px solid transparent;
+            border-top: 100px solid #f4e4c1;
+            border-bottom: 3px solid #d4af37;
+            transform-origin: top center;
+            transition: transform 0.8s ease;
+            z-index: 3;
+        }
+
+        .envelope.open .envelope-flap {
+            transform: rotateX(180deg);
+        }
+
+        .envelope-letter {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 260px;
+            height: 300px;
+            background: white;
+            border: 2px solid #d4af37;
+            z-index: 2;
+            transition: transform 0.8s ease 0.3s, opacity 0.8s ease 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            color: #5a5a5a;
+            text-align: center;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .envelope.open .envelope-letter {
+            transform: translateY(-250px);
+        }
+
+        .click-hint {
+            position: absolute;
+            bottom: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-size: 18px;
+            animation: pulse 2s infinite;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Confetti */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #f0f;
+            position: absolute;
+            animation: confetti-fall 3s linear forwards;
+            z-index: 9999;
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Main Invitation Container */
+        .invitation-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .invitation-container.visible {
+            opacity: 1;
+        }
+
+        .invitation-page {
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            margin: 40px 0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Spring Decorations */
+        .spring-decoration {
+            position: absolute;
+            font-size: 40px;
+            opacity: 0.2;
+        }
+
+        .decoration-top-left { top: 20px; left: 20px; }
+        .decoration-top-right { top: 20px; right: 20px; }
+        .decoration-bottom-left { bottom: 20px; left: 20px; }
+        .decoration-bottom-right { bottom: 20px; right: 20px; }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            color: #d4af37;
+            letter-spacing: 8px;
+            margin-bottom: 20px;
+            font-weight: normal;
+        }
+
+        .header .subtitle {
+            font-size: 20px;
+            color: #5a5a5a;
+            font-style: italic;
+            line-height: 1.6;
+        }
+
+        /* Event Details */
+        .event-details {
+            text-align: center;
+            margin: 40px 0;
+            padding: 30px;
+            background: linear-gradient(135deg, #fff9e6 0%, #f0f8ff 100%);
+            border-radius: 15px;
+            border: 2px solid #d4af37;
+        }
+
+        .event-details h2 {
+            color: #d4af37;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .event-details p {
+            font-size: 18px;
+            color: #5a5a5a;
+            margin: 10px 0;
+            line-height: 1.8;
+        }
+
+        .event-details strong {
+            color: #2c5f2d;
+            font-weight: bold;
+        }
+
+        /* Icons Section */
+        .activities {
+            display: flex;
+            justify-content: space-around;
+            margin: 40px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .activity-item {
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+            padding: 20px;
+            background: #fef5e7;
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .activity-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .activity-icon {
+            font-size: 50px;
+            margin-bottom: 10px;
+        }
+
+        .activity-text {
+            font-size: 14px;
+            color: #5a5a5a;
+            line-height: 1.4;
+        }
+
+        /* List Items */
+        .info-section {
+            margin: 30px 0;
+            padding: 20px;
+        }
+
+        .info-section h3 {
+            color: #d4af37;
+            font-size: 24px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .info-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .info-section li {
+            font-size: 17px;
+            color: #5a5a5a;
+            margin: 12px 0;
+            padding-left: 25px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .info-section li:before {
+            content: "🌸";
+            position: absolute;
+            left: 0;
+        }
+
+        .info-section p {
+            font-size: 17px;
+            color: #5a5a5a;
+            line-height: 1.8;
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        /* RSVP Form Styles */
+        .rsvp-section {
+            text-align: center;
+            margin: 40px 0;
+            padding: 40px;
+            background: linear-gradient(135deg, #e8f5e9 0%, #fff9e6 100%);
+            border-radius: 15px;
+        }
+
+        .rsvp-section h3 {
+            color: #2c5f2d;
+            font-size: 26px;
+            margin-bottom: 30px;
+        }
+
+        .rsvp-form {
+            max-width: 500px;
+            margin: 0 auto;
+            text-align: left;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 16px;
+            color: #2c5f2d;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 16px;
+            border: 2px solid #d4af37;
+            border-radius: 8px;
+            font-family: 'Georgia', serif;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2c5f2d;
+            box-shadow: 0 0 10px rgba(44, 95, 45, 0.2);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 30px;
+            margin-top: 10px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .radio-option input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            cursor: pointer;
+        }
+
+        .radio-option label {
+            font-weight: normal;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .guest-count-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .guest-count-group input {
+            max-width: 100px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #2c5f2d 0%, #4a7c4e 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            font-family: 'Georgia', serif;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(44, 95, 45, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .form-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .form-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+            display: block;
+        }
+
+        .form-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+            display: block;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 28px;
+            color: #d4af37;
+            font-style: italic;
+        }
+
+        .postscript {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 15px;
+            color: #666;
+            line-height: 1.8;
+            font-style: italic;
+        }
+
+        /* Navigation Dots */
+        .nav-dots {
+            position: fixed;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 100;
+        }
+
+        .nav-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ddd;
+            margin: 15px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-dot.active {
+            background: #d4af37;
+            transform: scale(1.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .invitation-page {
+                padding: 40px 20px;
+            }
+
+            .header h1 {
+                font-size: 28px;
+                letter-spacing: 4px;
+            }
+
+            .event-details h2 {
+                font-size: 22px;
+            }
+
+            .activities {
+                flex-direction: column;
+            }
+
+            .nav-dots {
+                right: 10px;
+            }
+
+            .radio-group {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .guest-count-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .guest-count-group input {
+                max-width: 100%;
+            }
+        }
+
+        /* Smooth Scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body>
+    <!-- Envelope Opening Page -->
+    <div class="envelope-container" id="envelopeContainer">
+        <div class="envelope" id="envelope">
+            <div class="envelope-back"></div>
+            <div class="envelope-flap"></div>
+            <div class="envelope-letter">
+                <p>✨<br>You're Invited!<br>💐</p>
+            </div>
+            <div class="click-hint">Click to Open</div>
+        </div>
+    </div>
+
+    <!-- Main Invitation -->
+    <div class="invitation-container" id="invitationContainer">
+        <!-- Page 1: Main Announcement -->
+        <div class="invitation-page" id="page1">
+            <div class="spring-decoration decoration-top-left">🌸</div>
+            <div class="spring-decoration decoration-top-right">🌿</div>
+            <div class="spring-decoration decoration-bottom-left">💐</div>
+            <div class="spring-decoration decoration-bottom-right">🌺</div>
+            
+            <div class="header">
+                <h1>We Are Married</h1>
+                <p class="subtitle">and joyfully invite you to a</p>
+                <h2 style="font-size: 32px; color: #2c5f2d; margin-top: 20px;">Celebration Reception</h2>
+            </div>
+
+            <div class="event-details">
+                <p><strong>Saturday, April 25, 2026</strong></p>
+                <p><strong>1:00 PM CST</strong></p>
+                <p style="margin-top: 20px; font-size: 20px;">🏡 The Farm</p>
+                <p>212 Private Road 350</p>
+                <p>Hubbard, Texas 76648</p>
+                <p style="margin-top: 20px; font-style: italic;">Hosted by<br><strong>Mr. & Mrs. Baker</strong></p>
+            </div>
+
+            <div style="text-align: center; margin: 40px 0; padding: 0 20px;">
+                <p style="font-size: 18px; color: #5a5a5a; line-height: 1.8; font-style: italic;">
+                    We exchanged vows privately<br>
+                    and would be honored to celebrate this next chapter<br>
+                    with the people who mean the most to us.
+                </p>
+            </div>
+        </div>
+
+        <!-- Page 2: Activities & Details -->
+        <div class="invitation-page" id="page2">
+            <div class="spring-decoration decoration-top-left">🍰</div>
+            <div class="spring-decoration decoration-top-right">🥂</div>
+            <div class="spring-decoration decoration-bottom-left">🎵</div>
+            <div class="spring-decoration decoration-bottom-right">☀️</div>
+
+            <div class="info-section">
+                <h3>Join us for an afternoon of:</h3>
+                <ul>
+                    <li>good food & relaxed conversation</li>
+                    <li>lawn games beneath the sunshine</li>
+                    <li>dancing under string lights</li>
+                </ul>
+            </div>
+
+            <div class="activities">
+                <div class="activity-item">
+                    <div class="activity-icon">🍽️</div>
+                    <div class="activity-text">Delicious<br>Food</div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">🎯</div>
+                    <div class="activity-text">Lawn<br>Games</div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">💡</div>
+                    <div class="activity-text">String Light<br>Dancing</div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">☀️</div>
+                    <div class="activity-text">Outdoor<br>Celebration</div>
+                </div>
+            </div>
+
+            <div class="info-section" style="background: #fef5e7; border-radius: 15px; padding: 30px; margin-top: 40px;">
+                <h3>Dress Code: Farm Fancy</h3>
+                <p>Comfortable, polished, outdoor-friendly attire<br>
+                (sundresses, boots, button-downs, hats — your style, your way)</p>
+            </div>
+        </div>
+
+        <!-- Page 3: RSVP Form -->
+        <div class="invitation-page" id="page3">
+            <div class="spring-decoration decoration-top-left">💌</div>
+            <div class="spring-decoration decoration-top-right">✉️</div>
+            <div class="spring-decoration decoration-bottom-left">💝</div>
+            <div class="spring-decoration decoration-bottom-right">🎀</div>
+
+            <div class="rsvp-section">
+                <h3>Please RSVP by March 25, 2026</h3>
+                <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSdePmjR7iTkXU2ajPPmFsdL4MIiQ7NRdS-rgE6y4VQgEqCC6g/viewform?embedded=true" width="640" height="1159" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
+                </form>
+            </div>
+
+            <div class="footer">
+                <p>We look forward to celebrating together<br>
+                under open skies and warm hearts.</p>
+                <p style="margin-top: 30px; font-size: 32px;">David & Jessica</p>
+            </div>
+
+            <div class="postscript">
+                <p><strong>P.S.</strong> Children welcome.<br>
+                (Bug spray recommended — the local critters can be enthusiastic.) 🦟</p>
+                
+                <p style="margin-top: 20px;"><strong>P.S.S.</strong> For those who can't make it:<br>
+                We'll miss you, but we totally get it.<br>
+                Your love and support mean a lot, and we'll be thinking of you.<br>
+                We hope to catch up, share stories, and celebrate together another time.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Dots -->
+    <div class="nav-dots" id="navDots" style="display: none;">
+        <div class="nav-dot active" data-page="1"></div>
+        <div class="nav-dot" data-page="2"></div>
+        <div class="nav-dot" data-page="3"></div>
+    </div>
+
+    <script>
+        // Envelope opening animation
+        const envelope = document.getElementById('envelope');
+        const envelopeContainer = document.getElementById('envelopeContainer');
+        const invitationContainer = document.getElementById('invitationContainer');
+        const navDots = document.getElementById('navDots');
+
+        envelope.addEventListener('click', function() {
+            envelope.classList.add('open');
+            
+            // Create confetti
+            createConfetti();
+            
+            // Hide envelope and show invitation after animation
+            setTimeout(() => {
+                envelopeContainer.classList.add('hidden');
+                invitationContainer.classList.add('visible');
+                navDots.style.display = 'block';
+                
+                setTimeout(() => {
+                    envelopeContainer.style.display = 'none';
+                }, 500);
+            }, 2000);
+        });
+
+        // Confetti animation
+        function createConfetti() {
+            const colors = ['#ff6b9d', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff', '#00d2d3'];
+            const confettiCount = 100;
+
+            for (let i = 0; i < confettiCount; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                    confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    
+                    const size = Math.random() * 10 + 5;
+                    confetti.style.width = size + 'px';
+                    confetti.style.height = size + 'px';
+                    
+                    if (Math.random() > 0.5) {
+                        confetti.style.borderRadius = '50%';
+                    }
+                    
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, 3000);
+                }, i * 20);
+            }
+        }
+
+        // Navigation dots functionality
+        const dots = document.querySelectorAll('.nav-dot');
+        const pages = document.querySelectorAll('.invitation-page');
+
+        // Update active dot on scroll
+        window.addEventListener('scroll', () => {
+            let current = '';
+            pages.forEach(page => {
+                const pageTop = page.offsetTop;
+                const pageHeight = page.clientHeight;
+                if (window.pageYOffset >= pageTop - pageHeight / 3) {
+                    current = page.getAttribute('id');
+                }
+            });
+
+            dots.forEach(dot => {
+                dot.classList.remove('active');
+                if (dot.getAttribute('data-page') === current.replace('page', '')) {
+                    dot.classList.add('active');
+                }
+            });
+        });
+
+        // Click dots to navigate
+        dots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                const pageNum = dot.getAttribute('data-page');
+                const targetPage = document.getElementById('page' + pageNum);
+                targetPage.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        // RSVP Form Logic
+        const rsvpForm = document.getElementById('rsvpForm');
+        const attendingRadios = document.querySelectorAll('input[name="attending"]');
+        const guestCountGroup = document.getElementById('guestCountGroup');
+        const dietaryGroup = document.getElementById('dietaryGroup');
+        const formMessage = document.getElementById('formMessage');
+
+        // Show/hide additional fields based on attendance
+        attendingRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value === 'yes') {
+                    guestCountGroup.style.display = 'block';
+                    dietaryGroup.style.display = 'block';
+                    document.getElementById('guestCount').required = true;
+                } else {
+                    guestCountGroup.style.display = 'none';
+                    dietaryGroup.style.display = 'none';
+                    document.getElementById('guestCount').required = false;
+                }
+            });
+        });
+
+        // Form submission
+        rsvpForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = rsvpForm.querySelector('.submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+            
+            // Collect form data
+            const formData = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                email: document.getElementById('email').value,
+                attending: document.querySelector('input[name="attending"]:checked').value,
+                guestCount: document.getElementById('guestCount').value || '0',
+                dietary: document.getElementById('dietary').value,
+                message: document.getElementById('message').value,
+                timestamp: new Date().toISOString()
+            };
+
+            try {
+                // OPTION 1: Send to Google Sheets via Google Apps Script
+                // Replace YOUR_GOOGLE_SCRIPT_URL with your actual deployment URL
+                const response = await fetch('YOUR_GOOGLE_SCRIPT_URL', {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                // Show success message
+                formMessage.className = 'form-message success';
+                formMessage.textContent = formData.attending === 'yes' 
+                    ? '🎉 Thank you! We can\'t wait to celebrate with you!' 
+                    : '💙 Thank you for letting us know. We\'ll miss you!';
+                
+                // Reset form
+                rsvpForm.reset();
+                guestCountGroup.style.display = 'none';
+                dietaryGroup.style.display = 'none';
+
+                // Create more confetti!
+                if (formData.attending === 'yes') {
+                    createConfetti();
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                formMessage.className = 'form-message error';
+                formMessage.textContent = '⚠️ Oops! Something went wrong. Please try again or contact us directly.';
+            }
+
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Send RSVP 💐';
+        });
+    </script>
+</body>
+</html>
